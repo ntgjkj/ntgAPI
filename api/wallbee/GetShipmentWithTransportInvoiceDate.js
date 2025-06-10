@@ -6,6 +6,7 @@ export default async function handler(req, res) {
   const { FROM, TO, username, password } = req.body;
 
   if (!FROM || !TO || !username || !password) {
+    console.log("Missing input", req.body);
     return res.status(400).json({ message: 'Missing required fields (FROM, TO, username, password)' });
   }
 
@@ -18,12 +19,16 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
         'Authorization': `Basic ${auth}`
       },
-      body: JSON.stringify({ FROM, TO })
+      body: JSON.stringify({ FROM, TO }) // non-standard but allowed if API accepts it
     });
 
-    const data = await response.json();
-    return res.status(200).json(data);
+    console.log("Status:", response.status);
+    const text = await response.text(); // safer for debugging than .json()
+    console.log("Response text:", text);
+
+    res.status(response.status).send(text);
   } catch (error) {
-    return res.status(500).json({ message: 'Fetch failed', error: error.toString() });
+    console.error("Fetch failed:", error);
+    res.status(500).json({ message: 'Fetch failed', error: error.toString() });
   }
 }
